@@ -1,0 +1,44 @@
+training:
+  context: 10
+  lam: 8
+  lam_alpha: ${.lam}
+  lam_ridge: 0
+  lr: 1e-4
+  max_iter: 8500
+  check_every: 50
+  val_every_step: 200
+  lr_warmup_steps: 2500
+  lr_decay_until_steps: ${.max_iter}
+  lr_decay_factor: 1e-4
+  weight_decay: 0.1
+  lam_warmup_steps: 3000
+  device: cuda
+  amp_precision: bfloat16
+  weight_precision: float32
+  enable_mixed_precision: true
+  use_lam_scheduler: false
+  use_lam_alpha_scheduler: true
+  alpha_loss_scale: 0.01
+  lam_alpha_start_step: 1500
+  use_log: true
+  sequence_stride: 1
+  threshold:
+
+model:
+  mlstm_block:
+  slstm_block:
+    slstm:
+      num_heads: 4
+    feedforward:
+  context_length: 10
+  num_blocks: 1
+  embedding_dim: 32
+  slstm_at: 'all'
+
+results:
+  gc: gc-run-32dim_scale0.01_lam8
+
+dataset:
+  name: mocap/run
+  dataset_config:
+    dataset_path: GC-xLSTMdatasets/mocap/all_asfamc/mocap_time_series_run_angles.npz

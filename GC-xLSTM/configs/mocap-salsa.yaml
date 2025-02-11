@@ -1,0 +1,44 @@
+training:
+  context: 10
+  lam: 5
+  lam_alpha: ${.lam}
+  lam_ridge: 0
+  lr: 1e-4
+  max_iter: 10000
+  check_every: 50
+  val_every_step: 200
+  lr_warmup_steps: 1500
+  lr_decay_until_steps: ${.max_iter}
+  lr_decay_factor: 1e-4
+  weight_decay: 0.1
+  lam_warmup_steps: 4000
+  device: cuda
+  amp_precision: bfloat16
+  weight_precision: float32
+  enable_mixed_precision: true
+  use_lam_scheduler: false
+  use_lam_alpha_scheduler: true
+  alpha_loss_scale: 0.01
+  lam_alpha_start_step: 1500
+  use_log: true
+  sequence_stride: 5
+  threshold:
+
+model:
+  mlstm_block:
+  slstm_block:
+    slstm:
+      num_heads: 4
+    feedforward:
+  context_length: 10
+  num_blocks: 1
+  embedding_dim: 16
+  slstm_at: 'all'
+
+results:
+  gc: gc-salsa-16dim_scale0.01_lam5
+
+dataset:
+  name: mocap/salsa
+  dataset_config:
+    dataset_path: GC-xLSTMdatasets/mocap/all_asfamc/mocap_time_series_salsa_angles.npz

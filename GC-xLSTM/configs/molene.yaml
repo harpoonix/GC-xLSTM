@@ -1,0 +1,44 @@
+training:
+  context: 10
+  lam: 12
+  lam_alpha: ${.lam}
+  lam_ridge: 0
+  lr: 1e-4
+  max_iter: 10000
+  check_every: 50
+  val_every_step: 200
+  lr_warmup_steps: 2500
+  lr_decay_until_steps: ${.max_iter}
+  lr_decay_factor: 1e-4
+  weight_decay: 0.1
+  lam_warmup_steps: 2700
+  device: cuda
+  amp_precision: bfloat16
+  weight_precision: float32
+  enable_mixed_precision: true
+  use_lam_scheduler: false
+  use_lam_alpha_scheduler: true
+  alpha_loss_scale: 0.01
+  lam_alpha_start_step: 1300
+  use_log: true
+  threshold:
+
+model:
+  mlstm_block:
+  slstm_block:
+    slstm:
+      num_heads: 4
+    feedforward:
+  context_length: 10
+  num_blocks: 1
+  embedding_dim: 32
+  slstm_at: 'all'
+
+results:
+  gc: plot_all_lam12
+
+dataset:
+  name: molene/temp
+  dataset_config:
+    field: t
+    num_stations: all

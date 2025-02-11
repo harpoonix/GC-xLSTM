@@ -1,0 +1,45 @@
+training:
+  context: 10
+  lam: 5
+  lam_alpha: ${.lam}
+  lam_ridge: 0
+  lr: 1e-4
+  max_iter: 13000
+  check_every: 50
+  val_every_step: 200
+  lr_warmup_steps: 2200
+  lr_decay_until_steps: ${.max_iter}
+  lr_decay_factor: 1e-4
+  weight_decay: 0.1
+  lam_warmup_steps: 4000
+  device: cuda
+  amp_precision: bfloat16
+  weight_precision: float32
+  enable_mixed_precision: true
+  use_lam_scheduler: false
+  use_lam_alpha_scheduler: true
+  alpha_loss_scale: 0.10
+  lam_alpha_start_step: 2000
+  use_log: true
+  threshold:
+
+model:
+  mlstm_block:
+  slstm_block:
+    slstm:
+      num_heads: 4
+    feedforward:
+  context_length: 10
+  num_blocks: 1
+  embedding_dim: 32
+  slstm_at: 'all'
+
+results:
+  gc: lorenz_p20_F10_T1000
+
+dataset:
+  name: lorenz-aucroc/F10/T1000/third
+  dataset_config:
+    p: 20
+    F: 10
+    T: 1000
