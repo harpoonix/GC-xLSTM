@@ -1,5 +1,5 @@
 // Copyright (c) **** and its affiliates 2023
-// Korbinian Poeppel
+// 
 
 // Adapted from the haste library
 //

@@ -13,14 +13,16 @@ from xlstm import (
 )
 from prepare_data import return_data
 from datasets.mocap.all_asfamc.AMCParser.plot_motion_gc import plot_graph_from_GC
-from show_gc_util import show_gc, show_gc_only_estimated
+from show_gc_util import show_estimated_gc_with_feature_names, show_gc_actual_and_estimated, show_lag_selection_gc
 
-# torch.manual_seed(500)
+torch.manual_seed(np.random.randint(1, 1000))
 
 parser = ArgumentParser()
 parser.add_argument("--config", required=True, type=str)
 parser.add_argument("--no-log", action="store_true", help="Do not log to file")
 parser.add_argument("--lam", type=float, help="Lambda value for training")
+parser.add_argument("--p", type=int, help="Number of variates")
+parser.add_argument("--checkpoint", type=str, help="Load this checkpoint")
 
 args = parser.parse_args()
 
@@ -33,8 +35,11 @@ if args.lam is not None:
     cfg.training.lam = args.lam
     cfg.training.lam_alpha = args.lam
 
+if args.p is not None:
+    cfg.dataset.dataset_config.p = args.p
 
-EXPERIMENT_IDENTIFIER = f"{time.strftime('%y%m%d-%H%M')}-{cfg.results.gc}"
+
+EXPERIMENT_IDENTIFIER = f"{time.strftime('%y%m%d-%H%M')}-{cfg.results.gc}_lam{cfg.training.lam}"
 exp_directory = f"exp/{cfg.dataset.name}/{EXPERIMENT_IDENTIFIER}"
 # Create a new directory inside results with the name EXPERIMENT_IDENTIFIER
 os.makedirs(f"exp/{cfg.dataset.name}/{EXPERIMENT_IDENTIFIER}/images", exist_ok=True)
@@ -61,8 +66,13 @@ if "molene" in cfg.dataset.name:
     stations = data[2]
 elif "mocap" in cfg.dataset.name:
     joint_info = data[2]
+elif "acatis" in cfg.dataset.name:
+    all_feature_names = data[2]
 
-X = torch.tensor(X_np[np.newaxis], dtype=torch.float32, device=device)
+if X_np.ndim == 2:
+    X = torch.tensor(X_np[np.newaxis], dtype=torch.float32, device=device)
+else:
+    X = torch.tensor(X_np, dtype=torch.float32, device=device)
 
 config = from_dict(
     data_class=xLSTMBlockStackConfig, data=OmegaConf.to_container(cfg.model)
@@ -72,7 +82,24 @@ xlstm: componentXLSTM = componentXLSTM(
     X.shape[-1], hidden=cfg.model.embedding_dim, config=config
 ).cuda(device=device)
 
+# import pdb; pdb.set_trace()
+
 logger.info("Model initialized:\n%s", xlstm)
+
+try:
+    if args.checkpoint is not None:
+        checkpoint = torch.load(f"exp/{args.checkpoint}")
+        xlstm.load_state_dict(checkpoint["model_state_dict"])
+        logger.info("Loaded checkpoint from %s", args.checkpoint)
+except FileNotFoundError:
+    logger.error("Checkpoint %s not found", args.checkpoint)
+    raise
+except Exception as e:
+    logger.error("Error loading checkpoint: %s", e)
+    raise
+
+training_start_time = time.time()
+torch.cuda.reset_peak_memory_stats()
 
 # Train with ISTA
 (
@@ -81,6 +108,7 @@ logger.info("Model initialized:\n%s", xlstm)
     alpha_loss_list,
     var_usage_list,
     accuracy_list,
+    balanced_accuracy_list,
     best_accuracy_gc,
     best_accuracy_model,
     lam_list,
@@ -89,6 +117,20 @@ logger.info("Model initialized:\n%s", xlstm)
     X,
     **cfg.training,
     true_GC=GC,
+)
+
+training_end_time = time.time()
+max_memory = torch.cuda.max_memory_allocated(device) / (1024**2)
+logger.info("Max memory allocated: %.2f MB", max_memory)
+max_memory_reserved = torch.cuda.max_memory_reserved(device) / (1024**2)
+logger.info("Max memory reserved: %.2f MB", max_memory_reserved)
+
+training_time = time.gmtime(training_end_time - training_start_time)
+logger.info(
+    "Training time: %d hours, %d minutes, %d seconds",
+    training_time.tm_hour,
+    training_time.tm_min,
+    training_time.tm_sec,
 )
 
 # Save the model
@@ -105,6 +147,7 @@ logger.info("Best Accuracy Model saved to %s", model_path)
 best_epoch = np.argmin(train_loss_list)
 # best accuracy
 best_accuracy = np.argmax(accuracy_list)
+best_balanced_accuracy = np.argmax(balanced_accuracy_list)
 
 # Loss function plot
 fig, ax1 = plt.subplots(figsize=(8, 8))
@@ -156,12 +199,16 @@ plt.savefig(f"{exp_directory}/images/usage.pdf", dpi=200)
 
 # Accuracy Plot
 plt.figure(figsize=(8, 5))
-plt.plot(50 * np.arange(len(accuracy_list)), accuracy_list)
-plt.plot(50 * best_epoch, accuracy_list[best_epoch], "ro")
-plt.plot(50 * best_accuracy, accuracy_list[best_accuracy], "r*")
+plt.plot(50 * np.arange(len(accuracy_list)), accuracy_list, label="Accuracy")
+plt.plot(50 * best_epoch, accuracy_list[best_epoch], "ro", label="Best Model")
+plt.plot(50 * best_accuracy, accuracy_list[best_accuracy], "r*", label="Best Accuracy")
+plt.plot(50 * np.arange(len(balanced_accuracy_list)), balanced_accuracy_list, label="Balanced Accuracy")
+plt.plot(50 * best_balanced_accuracy, balanced_accuracy_list[best_balanced_accuracy], "r*", label="Best Balanced Accuracy")
+plt.legend()
 plt.title("accuracy")
 plt.ylabel("Accuracy")
 plt.xlabel("Training steps")
+
 plt.tight_layout()
 plt.savefig(f"{exp_directory}/images/accuracy.pdf", dpi=200)
 
@@ -200,8 +247,17 @@ logger.info(
 best_accuracy_gc = (best_accuracy_gc > 0).int().cpu().data.numpy()
 
 # show_gc(GC, GC_est, best_accuracy_gc, f"{exp_directory}/images/GC.pdf")
-show_gc_only_estimated(GC, GC_est, f"{exp_directory}/images/GC_estimated.pdf")
+show_gc_actual_and_estimated(GC, GC_est, f"{exp_directory}/images/GC_comparison.pdf")
 
+if "var" in cfg.dataset.name:
+    GC_est_lags = xlstm.GC(threshold=True, use_lags=True).cpu().data.numpy()
+    show_lag_selection_gc(GC, GC_est, GC_est_lags, f"{exp_directory}/images/GC_lags")
+elif "acatis" in cfg.dataset.name:
+    show_estimated_gc_with_feature_names(
+        GC_est,
+        all_feature_names,
+        f"{exp_directory}/images/GC_acatis.pdf"
+    )
 
 GC_results = {"pred" : GC_est}
 if GC is not None:
@@ -215,14 +271,21 @@ if GC is not None:
 
     tpr = true_positives / (true_positives + false_negatives)
     fpr = false_positives / (false_positives + true_negatives)
+    
+    acc = 100*np.mean(GC == GC_est)
+    bal_acc = 100*(tpr + (1 - fpr)) / 2 # tpr - fpr = true_positives / (true_positives + false_negatives) - false_positives / (false_positives + true_negatives)
 
     logger.info(f"True positives: {true_positives}, False negatives: {false_negatives}")
     logger.info(f"False positives: {false_positives}, True negatives: {true_negatives}")
     logger.info("TPR = %.2f, FPR = %.2f", tpr, fpr)
+    logger.info("Balanced Accuracy = %.2f", bal_acc)
+    logger.info("Accuracy = %.2f", acc)
 
-    # save tpr and fpr to a file GC-xLSTMexp/lorenz-aucroc/lorenz-tpr-fpr.csv
-    with open(f"GC-xLSTMexp/{cfg.dataset.name}/tpr-fpr.csv", "a") as f:
+    # save tpr and fpr to a file /home/harsh/xlstm/Neural-GC/exp/lorenz-aucroc/lorenz-tpr-fpr.csv
+    with open(f"/home/harsh/xlstm/Neural-GC/exp/{cfg.dataset.name}/tpr-fpr.csv", "a") as f:
         f.write(f"{cfg.training.lam},{tpr},{fpr}\n")
+    with open(f"/home/harsh/xlstm/Neural-GC/exp/{cfg.dataset.name}/accuracy.csv", "a") as f:
+        f.write(f"{cfg.training.lam},{acc},{bal_acc}\n")
 
 np.savez_compressed(f"{exp_directory}/GC_results.npz", **GC_results)
 logger.info("Saved GC results to %s", f"{exp_directory}/GC_results.npz")

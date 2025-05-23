@@ -1,5 +1,5 @@
 // Copyright (c) **** and its affiliates 2023
-// Korbinian Poeppel
+// 
 
 #include "cuda_error.h"
 

@@ -23,6 +23,8 @@ class xLSTMBlockStackConfig:
     add_post_blocks_norm: bool = True
     bias: bool = False
     dropout: float = 0.0
+    
+    use_lags: bool = False
 
     # The block indices at which sLSTM blocks are placed.
     # Indexing starts from 0.

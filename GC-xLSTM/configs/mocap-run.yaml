@@ -41,4 +41,4 @@ results:
 dataset:
   name: mocap/run
   dataset_config:
-    dataset_path: GC-xLSTMdatasets/mocap/all_asfamc/mocap_time_series_run_angles.npz
+    dataset_path: /home/harsh/xlstm/Neural-GC/datasets/mocap/all_asfamc/mocap_time_series_run_angles.npz

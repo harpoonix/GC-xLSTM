@@ -1,5 +1,5 @@
 # Copyright (c) **** and its affiliates 2024
-# , Korbinian Pöppel
+# ,
 import torch
 import torch.nn.functional as F
 from torch import nn

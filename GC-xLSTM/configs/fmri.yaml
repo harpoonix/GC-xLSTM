@@ -1,13 +1,13 @@
 training:
   context: 10
-  lam: 5
+  lam: 8
   lam_alpha: ${.lam}
   lam_ridge: 0
   lr: 1e-4
-  max_iter: 10000
+  max_iter: 8000
   check_every: 50
   val_every_step: 200
-  lr_warmup_steps: 1500
+  lr_warmup_steps: 2200
   lr_decay_until_steps: ${.max_iter}
   lr_decay_factor: 1e-4
   weight_decay: 0.1
@@ -18,10 +18,9 @@ training:
   enable_mixed_precision: true
   use_lam_scheduler: false
   use_lam_alpha_scheduler: true
-  alpha_loss_scale: 0.01
-  lam_alpha_start_step: 1500
+  alpha_loss_scale: 0.10
+  lam_alpha_start_step: 2000
   use_log: true
-  sequence_stride: 5
   threshold:
 
 model:
@@ -30,15 +29,17 @@ model:
     slstm:
       num_heads: 4
     feedforward:
-  context_length: 10
+  context_length: ${training.context}
   num_blocks: 1
-  embedding_dim: 16
+  embedding_dim: 32
   slstm_at: 'all'
+  use_lags: false
 
 results:
-  gc: gc-salsa-16dim_scale0.01_lam5
+  gc: fmri_aucroc_no_lags_context_10
 
 dataset:
-  name: mocap/salsa
+  name: fmri/aucroc
   dataset_config:
-    dataset_path: /home/harsh/xlstm/Neural-GC/datasets/mocap/all_asfamc/mocap_time_series_salsa_angles.npz
+    timeseries_file: /home/harsh/GC-xLSTM/GC-xLSTM/datasets/fMRI/timeseries.csv
+    gc_file: /home/harsh/GC-xLSTM/GC-xLSTM/datasets/fMRI/sim_gt_processed.csv

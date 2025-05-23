@@ -1,5 +1,5 @@
 # Copyright (c) **** and its affiliates 2024
-# , Korbinian Pöppel
+# 
 from dataclasses import dataclass, field
 from typing import Optional
 

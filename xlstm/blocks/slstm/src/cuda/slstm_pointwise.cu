@@ -1,5 +1,5 @@
 // Copyright (c) **** and its affiliates 2023
-// Korbinian Poeppel
+// 
 
 #include "../util/cuda_error.h"
 #include "../util/inline_ops.cuh"

@@ -2,13 +2,37 @@ import numpy as np
 import pandas as pd
 from typing import Tuple
 from synthetic import simulate_lorenz_96, simulate_var
+from datasets.acatis.prepare_acatis_data import fetch_acatis_data
+
+def get_fmri_data(timeseries_file: str, gc_file: str):
+    # Read the time series data from the CSV file
+    time_series = pd.read_csv(timeseries_file, header=0).to_numpy()
+
+    # Print the shape of the time series array
+    print(f"Shape of time series array: {time_series.shape}")
+
+    # Read the Granger causality data from the CSV file, the format being 
+    # [cause, effect, lag]. there is no header in the file
+    gc_data = pd.read_csv(gc_file, header=None).to_numpy()
+    # Print the shape of the Granger causality data
+    print(f"Shape of Granger causality data: {gc_data.shape}")
+    # convert the gc data to p x p boolean matrix, with rows representing effect and columns representing cause
+    p = time_series.shape[1]
+    gc_matrix = np.zeros((p, p), dtype=int)
+    for i in range(gc_data.shape[0]):
+        cause = int(gc_data[i, 0])
+        effect = int(gc_data[i, 1])
+        lag = int(gc_data[i, 2])
+        gc_matrix[effect, cause] = 1
+    
+    return time_series, gc_matrix
 
 def fetch_molene_data(field: str, num_stations: int | str = 'all') -> Tuple[np.ndarray, list]:
     # Load the data from a CSV file
-    df = pd.read_csv("GC-xLSTMdatasets/molene/Original_Data/aggregated_data.csv")
+    df = pd.read_csv("/home/harsh/xlstm/Neural-GC/datasets/molene/Original_Data/aggregated_data.csv")
 
     # Load the weather stations data
-    weather_stations_df = pd.read_csv("GC-xLSTMdatasets/molene/Original_Data/weather_stations.csv")
+    weather_stations_df = pd.read_csv("/home/harsh/xlstm/Neural-GC/datasets/molene/Original_Data/weather_stations.csv")
     valid_stations = weather_stations_df['numer_sta'].unique()
 
     # Filter rows where temperature (t) is not missing (mq) and station is valid
@@ -71,7 +95,7 @@ def return_data(dataset: dict) -> Tuple[np.ndarray, ...]:
         T = dataset['dataset_config']['T']
         F = dataset['dataset_config']['F']
         return simulate_lorenz_96(p=p, F=F, T=T)
-    elif dataset["name"] == "var":
+    elif "var" in dataset["name"]:
         p = dataset['dataset_config']['p']
         T = dataset['dataset_config']['T']
         lag = dataset['dataset_config']['lag']
@@ -83,6 +107,22 @@ def return_data(dataset: dict) -> Tuple[np.ndarray, ...]:
         time_series_data = time_series['time_series_data']
         joint_info = time_series['joint_info']
         return time_series_data, None, joint_info
+    elif "fmri" in dataset["name"]:
+        timeseries_file = dataset["dataset_config"]["timeseries_file"]
+        gc_file = dataset["dataset_config"]["gc_file"]
+        time_series, gc_matrix = get_fmri_data(timeseries_file, gc_file)
+        return time_series, gc_matrix, None
+    elif "acatis" in dataset["name"]:
+        acatis_time_series, gc_matrix, all_feature_names = fetch_acatis_data(subset=False)
+        # time series shape is (num_companies, time_steps, num_features)
+        return acatis_time_series, gc_matrix, all_feature_names
     else:
         raise ValueError(f"Unsupported dataset name: {dataset['name']}")
-    
+
+def write_to_csv(data: np.ndarray, file_path: str) -> None:
+    """
+    Write the given data to a CSV file.
+    """
+    df = pd.DataFrame(data)
+    df.to_csv(file_path, index=False)
+    print(f"Data written to {file_path}")
