@@ -26,19 +26,3 @@ When inside the `GC-xLSTM` folder, after activating the conda environment, use t
 ```bash
 ./run.sh lorenz/F40T1000.yaml 1
 ```
-
-## Citation
-
-If you find our work useful, please consider citing our paper using the following BibTeX entry:
-
-```bibtex
-@article{poonia2025grangercausality,
-      title={Exploring Neural Granger Causality with xLSTMs: Unveiling Temporal Dependencies in Complex Data}, 
-      author={Harsh Poonia and Felix Divo and Kristian Kersting and Devendra Singh Dhami},
-      year={2025},
-      eprint={2502.09981},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2502.09981}, 
-}
-```
