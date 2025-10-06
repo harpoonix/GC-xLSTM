@@ -1,6 +1,8 @@
 # Exploring Neural Granger Causality with xLSTMs: Unveiling Temporal Dependencies in Complex Data
 
-Accepted to Neural Information Processing Systems (NeurIPS) 2025.
+Link to the paper: [https://arxiv.org/abs/2502.09981](https://arxiv.org/abs/2502.09981).  
+Authors: Harsh Poonia*, Felix Divo*, Kristian Kersting, Devendra Singh Dhami  
+Accepted to the 39th Conference on Neural Information Processing Systems (NeurIPS 2025).  
 
 ## Abstract
 
