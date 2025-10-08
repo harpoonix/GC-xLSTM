@@ -1,12 +1,20 @@
 # Exploring Neural Granger Causality with xLSTMs: Unveiling Temporal Dependencies in Complex Data
 
-Link to the paper: [https://arxiv.org/abs/2502.09981](https://arxiv.org/abs/2502.09981).  
+[![NeurIPS 2025 Poster](https://img.shields.io/badge/NeurIPS%202025-Poster-blue)](https://neurips.cc/virtual/2025/poster/115199)
+[![arXiv](https://img.shields.io/badge/arXiv-2502.09981-b31b1b)](https://arxiv.org/abs/2502.09981). 
+
+
 Authors: Harsh Poonia*, Felix Divo*, Kristian Kersting, Devendra Singh Dhami  
 Accepted to the 39th Conference on Neural Information Processing Systems (NeurIPS 2025).  
 
-## Abstract
+## Architecture and Method
+![GC-xLSTM Architecture](images/architecture.jpeg)
+*Figure 1: Overview of the GC-xLSTM architecture showing the integration of xLSTM components with dynamic lasso penalty.*
 
-Causality in time series can be difficult to determine, especially in the presence of non-linear dependencies. The concept of Granger causality helps analyze potential relationships between variables, thereby offering a method to determine whether one time series can predict—Granger cause—future values of another. Although successful, Granger causal methods still struggle with capturing long-range relations between variables. To this end, we leverage the recently successful Extended Long Short-Term Memory (xLSTM) architecture and propose Granger causal xLSTMs (GC-xLSTM). It first enforces sparsity between the time series components by using a novel dynamic lasso penalty on the initial projection. Specifically, we adaptively improve the model and identify sparsity candidates. Our joint optimization procedure then ensures that the Granger causal relations are recovered in a robust fashion. Our experimental evaluations on three datasets demonstrate the overall efficacy of our proposed GC-xLSTM model.
+<img src="images/method.jpeg" alt="Our Method" width="400">
+
+*Figure 2: Illustration of our method's workflow - joint optimization over the forecasting model and compression over weights to identify Granger causal relationships.*
+
 
 ## Requirements
 
@@ -36,13 +44,19 @@ When inside the `GC-xLSTM` folder, after activating the conda environment, use t
 If you find our work useful, please consider citing our paper using the following BibTeX entry:
 
 ```bibtex
-@article{poonia2025grangercausality,
-      title={Exploring Neural Granger Causality with xLSTMs: Unveiling Temporal Dependencies in Complex Data}, 
-      author={Harsh Poonia and Felix Divo and Kristian Kersting and Devendra Singh Dhami},
-      year={2025},
-      eprint={2502.09981},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2502.09981}, 
+@inproceedings{
+poonia2025grangercausality,
+title={Exploring Neural Granger Causality with x{LSTM}s: Unveiling Temporal Dependencies in Complex Data},
+author={Poonia, Harsh* and Divo, Felix* and Kersting, Kristian and Dhami, Devendra Singh},
+booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems},
+year={2025},
+url={https://openreview.net/forum?id=xtHJ0eNEUv}
 }
 ```
+
+## Acknowledgements
+
+This project is partially funded by the German Federal Ministry of Education and Research (BMBF) within the “The Future of Value Creation – Research on Production, Services and Work” program (funding number 02L19C150) managed by the Project Management Agency Karlsruhe (PTKA). The authors are responsible for the content of this publication.
+
+<img src="images/acknowledgement.jpg" alt="Acknowledgements" width="300">
+
