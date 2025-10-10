@@ -1,7 +1,7 @@
 # Exploring Neural Granger Causality with xLSTMs: Unveiling Temporal Dependencies in Complex Data
 
 [![NeurIPS 2025 Poster](https://img.shields.io/badge/NeurIPS%202025-Poster-blue)](https://neurips.cc/virtual/2025/poster/115199)
-[![arXiv](https://img.shields.io/badge/arXiv-2502.09981-b31b1b)](https://arxiv.org/abs/2502.09981). 
+[![arXiv](https://img.shields.io/badge/arXiv-2502.09981-b31b1b)](https://arxiv.org/abs/2502.09981)
 
 
 Authors: Harsh Poonia*, Felix Divo*, Kristian Kersting, Devendra Singh Dhami  
@@ -45,12 +45,12 @@ If you find our work useful, please consider citing our paper using the followin
 
 ```bibtex
 @inproceedings{
-poonia2025grangercausality,
-title={Exploring Neural Granger Causality with x{LSTM}s: Unveiling Temporal Dependencies in Complex Data},
-author={Poonia, Harsh* and Divo, Felix* and Kersting, Kristian and Dhami, Devendra Singh},
-booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems},
-year={2025},
-url={https://openreview.net/forum?id=xtHJ0eNEUv}
+  poonia2025grangercausality,
+  title={Exploring Neural Granger Causality with x{LSTM}s: Unveiling Temporal Dependencies in Complex Data},
+  author={Poonia, Harsh* and Divo, Felix* and Kersting, Kristian and Dhami, Devendra Singh},
+  booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems},
+  year={2025},
+  url={https://openreview.net/forum?id=xtHJ0eNEUv}
 }
 ```
 
